@@ -4,62 +4,67 @@ using LibraryApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers;
-
 [ApiController]
-[Route("[controller]")]
-public class LibraryBranchController : Controller
+[Route("api/library-branches")]
+public class LibraryBranchApiController : ControllerBase
 {
     private readonly IGenericRepository<LibraryBranch> _libRep;
 
-    public LibraryBranchController(IGenericRepository<LibraryBranch> libRep)
+    public LibraryBranchApiController(IGenericRepository<LibraryBranch> libRep)
     {
         _libRep = libRep;
     }
 
     [HttpGet(Name = "GetLibraryBranchIndex")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<LibraryBranchViewModel>>> Index(int page = 1, int pageSize = 10)
     {
-        var branches = await _libRep.GetAllAsync();
+        try
+        {
+            var branches = await _libRep.GetAllAsync();
 
-        var totalItems = branches.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            var totalItems = branches.Count();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-        var branchViewModels = branches
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)//Values for pages = 10
-            .Select(branch => new LibraryBranchViewModel
+            var branchViewModels = branches
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(branch => new LibraryBranchViewModel
+                {
+                    LibraryBranchId = branch.LibraryBranchId,
+                    BranchName = branch.BranchName,
+                    ZipCode = branch.ZipCode,
+                    Address = branch.Address,
+                    Phone = branch.Phone,
+                    City = branch.City,
+                    Email = branch.Email,
+                    OpeningHours = branch.OpeningHours,
+                    CreatedAt = branch.CreatedAt,
+                    UpdatedAt = branch.UpdatedAt
+                }).ToList();
+
+            var paginationInfo = new PaginationInfoViewModel
             {
-                LibraryBranchId = branch.LibraryBranchId,
-                BranchName = branch.BranchName,
-                ZipCode = branch.ZipCode,
-                Address = branch.Address,
-                Phone = branch.Phone,
-                City = branch.City,
-                Email = branch.Email,
-                OpeningHours = branch.OpeningHours,
-                CreatedAt = branch.CreatedAt,
-                UpdatedAt = branch.UpdatedAt
-            }).ToList();
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
 
-        var paginationInfo = new PaginationInfoViewModel
+            return Ok(new
+            {
+                LibraryBranches = branchViewModels,
+                PaginationInfo = paginationInfo
+            });
+        }
+        catch (Exception ex)
         {
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalItems = totalItems,
-            TotalPages = totalPages
-        };
-
-        var viewModel = new LibraryBranchIndexViewModel
-        {
-            LibraryBranches = branchViewModels,
-            PaginationInfo = paginationInfo
-        };
-        return View(viewModel);
+            // Log the exception or handle it appropriately
+            return StatusCode(500, "Internal Server Error");
+        }
     }
-    
 
     [HttpPost(Name = "CreateLibraryBranch")]
-    public async Task<IActionResult> Create(LibraryBranchViewModel viewModel)
+    public async Task<IActionResult> Create([FromBody] LibraryBranchViewModel viewModel)
     {
         if (ModelState.IsValid)
         {
@@ -78,24 +83,24 @@ public class LibraryBranchController : Controller
             _libRep.Add(branch);
             await _libRep.SaveAsync();
 
-            return RedirectToAction("Index");
+            return CreatedAtAction("GetLibraryDetailsById", new { id = branch.LibraryBranchId }, viewModel);
         }
-        return View(viewModel);
+
+        return BadRequest(ModelState);
     }
 
-    /*[HttpGet("{id}", Name = "GetLibraryBranchDetails")]
-    public async Task<IActionResult> Edit(int? id)
-     {
+    [HttpGet("{id}", Name = "GetLibraryDetailsById")]
+    public async Task<ActionResult<LibraryBranchViewModel>> Details(int? id)
+    {
         if (id == null)
         {
-            throw new ArgumentException("ID cannot be null or not found");
+            return BadRequest("ID cannot be null");
         }
 
         var branch = await _libRep.GetByIdAsync(id.Value);
-
         if (branch == null)
         {
-            throw new ArgumentException($"Branch with ID {id} not found");
+            return NotFound();
         }
 
         var viewModel = new LibraryBranchViewModel
@@ -109,18 +114,18 @@ public class LibraryBranchController : Controller
             Email = branch.Email,
             OpeningHours = branch.OpeningHours,
             CreatedAt = branch.CreatedAt,
-            UpdatedAt = DateTime.Now
+            UpdatedAt = branch.UpdatedAt
         };
 
-        return View(viewModel);
+        return Ok(viewModel);
     }
-*/
-    [HttpPost("{id}", Name = "EditLibraryBranch")]
-    public async Task<IActionResult> Edit(int id, LibraryBranchViewModel viewModel)
+
+    [HttpPut("{id}", Name = "EditLibraryBranch")]
+    public async Task<IActionResult> Edit(int id, [FromBody] LibraryBranchViewModel viewModel)
     {
-        if (id == 0)
+        if (id != viewModel.LibraryBranchId)
         {
-            throw new ArgumentException("ID cannot be null or not found");
+            return BadRequest("ID in the URL does not match ID in the request body");
         }
 
         if (ModelState.IsValid)
@@ -142,41 +147,9 @@ public class LibraryBranchController : Controller
             _libRep.Update(branch);
             await _libRep.SaveAsync();
 
-            return RedirectToAction(nameof(Index));
-        }
-        return View(viewModel);
-    }
-
-    [HttpGet("{id}", Name = "GetLibraryDetailsById")]
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
+            return NoContent();
         }
 
-        var branch = await _libRep.GetByIdAsync(id.Value);
-        if (branch == null)
-        {
-            return NotFound();
-        }
-
-        var viewModel = new LibraryBranchViewModel
-        {
-            LibraryBranchId = branch.LibraryBranchId,
-            BranchName = branch.BranchName,
-
-            ZipCode = branch.ZipCode,
-            Address = branch.Address,
-            Phone = branch.Phone,
-            City = branch.City,
-            Email = branch.Email,
-            OpeningHours = branch.OpeningHours,
-            CreatedAt = branch.CreatedAt,
-            UpdatedAt = branch.UpdatedAt
-
-        };
-
-        return View(viewModel);
+        return BadRequest(ModelState);
     }
 }
