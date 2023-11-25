@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\LibraryApi\\LibraryApi.csproj": {}
+    "C:\\holis\\MSACS\\adv\\LibraryApi\\LibraryApi.csproj": {}
   },
   "projects": {
-    "C:\\LibraryApi\\LibraryApi.csproj": {
+    "C:\\holis\\MSACS\\adv\\LibraryApi\\LibraryApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\LibraryApi\\LibraryApi.csproj",
+        "projectUniqueName": "C:\\holis\\MSACS\\adv\\LibraryApi\\LibraryApi.csproj",
         "projectName": "LibraryApi",
-        "projectPath": "C:\\LibraryApi\\LibraryApi.csproj",
-        "packagesPath": "C:\\Users\\Eduardo Flores\\.nuget\\packages\\",
-        "outputPath": "C:\\LibraryApi\\obj\\",
+        "projectPath": "C:\\holis\\MSACS\\adv\\LibraryApi\\LibraryApi.csproj",
+        "packagesPath": "C:\\Users\\eflor\\.nuget\\packages\\",
+        "outputPath": "C:\\holis\\MSACS\\adv\\LibraryApi\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Eduardo Flores\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\eflor\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -40,9 +45,29 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
+            "Microsoft.AspNetCore.Identity.UI": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[7.0.2, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[7.0.11, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
@@ -68,7 +93,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,8 +1,29 @@
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
+using LibraryApi;
+using LibraryApi.Models;
+using LibraryApi.Repo;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
+
+
+
+//Services
+builder.Services.AddScoped<IGenericRepository<Author>, GenericRepository<Author>>();
+builder.Services.AddScoped<IGenericRepository<Customer>, GenericRepository<Customer>>();
+builder.Services.AddScoped<IGenericRepository<LibraryBranch>, GenericRepository<LibraryBranch>>();
+builder.Services.AddScoped<IGenericRepository<Book>, GenericRepository<Book>>();
+
+
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -28,7 +49,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
