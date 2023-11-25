@@ -4,6 +4,9 @@ using LibraryApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers;
+
+[ApiController]
+[Route("[controller]")]
 public class AuthorController : Controller
 {
     private readonly IGenericRepository<Author> _authorRepository;
@@ -13,6 +16,7 @@ public class AuthorController : Controller
         _authorRepository = authorRepository;
     }
 
+    [HttpGet(Name = "GetAuthorListIndex")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10)//Defaul value to be shown on Index = 10
     {
         var authors = await _authorRepository.GetAllAsync();
@@ -48,12 +52,8 @@ public class AuthorController : Controller
         return View(viewModel);
     }
 
-    public IActionResult Create()
-    {
-        return View();
-    }
 
-    [HttpPost]
+    [HttpPost(Name = "CreateAuthor")]
     public async Task<IActionResult> Create(AuthorViewModel vm)
     {
         if (ModelState.IsValid)
@@ -74,35 +74,35 @@ public class AuthorController : Controller
         return View(vm);
     }
 
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null)
-        {
-            throw new ArgumentException("ID cannot be null or not found");
-        }
+    // public async Task<IActionResult> Edit(int? id)
+    // {
+    //     if (id == null)
+    //     {
+    //         throw new ArgumentException("ID cannot be null or not found");
+    //     }
 
-        var author = await _authorRepository.GetByIdAsync(id.Value);
+    //     var author = await _authorRepository.GetByIdAsync(id.Value);
 
-        if (author == null)
-        {
-            throw new ArgumentException($"Author with ID {id} not found");
-        }
+    //     if (author == null)
+    //     {
+    //         throw new ArgumentException($"Author with ID {id} not found");
+    //     }
 
-        var authorViewModel = new AuthorViewModel
-        {
-            AuthorId = author.AuthorId,
-            LastName = author.LastName,
-            FirstName = author.FirstName,
-            BirthPlace = author.BirthPlace,
-            NobelPrize = author.NobelPrize,
-            CreatedAt = author.CreatedAt,
-            UpdatedAt = DateTime.Now
-        };
+    //     var authorViewModel = new AuthorViewModel
+    //     {
+    //         AuthorId = author.AuthorId,
+    //         LastName = author.LastName,
+    //         FirstName = author.FirstName,
+    //         BirthPlace = author.BirthPlace,
+    //         NobelPrize = author.NobelPrize,
+    //         CreatedAt = author.CreatedAt,
+    //         UpdatedAt = DateTime.Now
+    //     };
 
-        return View(authorViewModel);
-    }
+    //     return View(authorViewModel);
+    // }
 
-    [HttpPost]
+    [HttpPost("{id}", Name = "EditAuthor")]
     public async Task<IActionResult> Edit(int id, AuthorViewModel vm)
     {
         if (id == 0)
@@ -132,6 +132,7 @@ public class AuthorController : Controller
         return View(vm);
     }
 
+    [HttpGet("{id}", Name = "GetAuthorDetailsById")]
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)

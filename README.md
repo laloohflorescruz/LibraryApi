@@ -1,6 +1,6 @@
-## Library Management System
+## LibraryAPI
 
-This is a Library Management System project built using  Entity Framework Core version 7, SQLite and Bootstrap. The system is designed to manage books, authors, library branch and customers.
+This is a Library Management API's System project built using Entity Framework Core version 7, SQLite and Swagger. The API is designed to manage books, authors, library branch and customers.
 
 This is a project for university.
 
@@ -17,9 +17,6 @@ This is a project for university.
 10. List of Libraries branchs
 11. Create and Edit libraries branch
 12. Details of Libraries branch
-13. Seach (Only for books)
-14. Social Network Login
-15. Authentication
 
 
 ## Prerequisites
@@ -33,8 +30,8 @@ This is a project for university.
 
 ### 1. Clone the Repository
 
-git clone https://github.com/laloohflorescruz/library.git
-cd LibraryProject
+git clone https://github.com/laloohflorescruz/libraryapi.git
+cd LibraryApi
 
 ## Tool Required:
 -dotnet tool install --global dotnet-ef --version 7.0.0
@@ -53,7 +50,7 @@ dotnet restore
 
 #### 3.1 Run Database Migrations
 
--cd LibraryProject
+-cd LibraryApi
 -dotnet ef migrations add InitialCreate (If you want create a new database empty)
 -dotnet ef database update
 
@@ -71,24 +68,17 @@ The application will be accessible at `https://localhost:7243/` by default.
 
 ## Project Structure
 
-- **LibraryProject/**
+- **LibraryApi/**
   - **Controllers/** - Contains the controllers for handling HTTP requests.
   - **Models/** - Contains the data models used in the application.
   - **ViewsModel/** - Contains the viewmodel used in the application.
-  - **Views/** - Contains the HTML templates and Razor files.
   - **Repo/** - Contains a generic repository with its interface.
-  - **wwwroot/** - Contains static files such as CSS, JavaScript, and images.
   - **appsettings.json** - Configuration file for the application.
   - **Startup.cs** - Configures services and the app's request pipeline.
 
 
-## Social Network
-If you want to use any social network like authentication, just click on which you want you prefer. Be use you insert your email registred on that social network.
 
-
-## You can see a live demo here
-[Here](https://www.eduardoflores.name/portfolio/LibraryManagement/)
-
+<!-- 
 
 ## Demo Pictures
 
@@ -109,7 +99,7 @@ If you want to use any social network like authentication, just click on which y
 <img src="./LibraryProject/assets/img/15.png"/>
 <img src="./LibraryProject/assets/img/16.png"/>
 <img src="./LibraryProject/assets/img/17.png"/>
- 
+  -->
 
 ## Contributing
 Feel free to contribute to the development of this project by opening issues or pull requests. Your feedback is highly appreciated!
