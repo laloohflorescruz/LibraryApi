@@ -45,16 +45,16 @@ namespace LibraryApi.Repo
                 throw new InvalidOperationException("Error while saving changes", ex);
             }
 
-        }
-
-        // public void Remove(T entity)
-        // {
-        //     _dbSet.Remove(entity);
-        // }
+        } 
 
         public async Task<int> SaveAsync()
         {
             return await _dbContext.SaveChangesAsync();
+        }
+
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
         }
     }
 }
