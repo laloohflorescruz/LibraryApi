@@ -2,68 +2,63 @@ using LibraryApi.Models;
 using LibraryApi.Repo;
 using LibraryApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-
-namespace LibraryApi.Controllers;
-
 [ApiController]
-[Route("[controller]")]
-public class BookController : Controller
+[Route("api/books")]
+public class BookApiController : ControllerBase
 {
     private readonly IGenericRepository<Book> _bookRepository;
-    private readonly IGenericRepository<Author> _authorRepository;
-    private readonly IGenericRepository<LibraryBranch> _libraryBranchRepository;
 
-    public BookController(IGenericRepository<Book> bookRepository,
-                          IGenericRepository<Author> authorRepository,
-                          IGenericRepository<LibraryBranch> libraryBranchRepository)
+    public BookApiController(IGenericRepository<Book> bookRepository)
     {
         _bookRepository = bookRepository;
-        _authorRepository = authorRepository;
-        _libraryBranchRepository = libraryBranchRepository;
     }
 
     [HttpGet(Name = "GetBookListIndex")]
-
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)//Defaul value to be shown on Index = 10
+    public async Task<ActionResult<IEnumerable<BookViewModel>>> Index(int page = 1, int pageSize = 10)
     {
-        var books = await _bookRepository.GetAllAsync();
-
-        var totalItems = books.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        var bookViewModels = books
-         .Skip((page - 1) * pageSize)
-         .Take(pageSize)//Values for pages = 10
-         .Select(book => new BookViewModel
-         {
-             BookId = book.BookId,
-             Title = book.Title,
-             ISBN = book.ISBN,
-             PublicationDate = book.PublicationDate,
-             Genre = book.Genre,
-             AuthorId = book.AuthorId,
-             LibraryBranchId = book.LibraryBranchId
-         }).ToList();
-
-        var paginationInfo = new PaginationInfoViewModel
+        try
         {
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalItems = totalItems,
-            TotalPages = totalPages
-        };
+            var books = await _bookRepository.GetAllAsync();
 
-        var viewModel = new BookIndexViewModel
+            var totalItems = books.Count();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            var bookViewModels = books
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(book => new BookViewModel
+                {
+                    BookId = book.BookId,
+                    Title = book.Title,
+                    ISBN = book.ISBN,
+                    PublicationDate = book.PublicationDate,
+                    Genre = book.Genre,
+                    AuthorId = book.AuthorId,
+                    LibraryBranchId = book.LibraryBranchId
+                }).ToList();
+
+            var paginationInfo = new PaginationInfoViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
+
+            return Ok(new
+            {
+                Books = bookViewModels,
+                PaginationInfo = paginationInfo
+            });
+        }
+        catch (Exception)
         {
-            Book = bookViewModels,
-            PaginationInfo = paginationInfo
-        };
-        return View(viewModel);
+            return StatusCode(500, "Internal Server Error");
+        }
     }
 
-
     [HttpPost(Name = "CreateBook")]
-    public async Task<IActionResult> Create(BookViewModel vm)
+    public async Task<IActionResult> Create([FromBody] BookViewModel vm)
     {
         if (ModelState.IsValid)
         {
@@ -80,86 +75,18 @@ public class BookController : Controller
             _bookRepository.Add(book);
             await _bookRepository.SaveAsync();
 
-            return RedirectToAction("Index");
-        }
-        // ViewBag.AuthorItems = await GetAuthorsAsync();
-        //  ViewBag.LibraryItems = await GetLibraryAsync();
-        return View(vm);
-    }
-
-
-    // public async Task<IActionResult> Edit(int? id)
-    // {
-    //     if (id == null)
-    //     {
-    //         throw new ArgumentException("ID cannot be null or not found");
-    //     }
-
-    //     var book = await _bookRepository.GetByIdAsync(id.Value);
-
-    //     if (book == null)
-    //     {
-    //         throw new ArgumentException($"Book with ID {id} not found");
-    //     }
-
-    //     var bookViewModel = new BookViewModel
-    //     {
-    //         BookId = book.BookId,
-    //         Title = book.Title,
-    //         ISBN = book.ISBN,
-    //         PublicationDate = book.PublicationDate,
-    //         Genre = book.Genre,
-    //         AuthorId = book.AuthorId,
-    //         LibraryBranchId = book.LibraryBranchId,
-    //         CreatedAt = book.CreatedAt,
-    //         UpdatedAt = DateTime.Now
-    //     };
-
-    //     //ViewBag.AuthorItems = await GetAuthorsAsync();
-    //     //ViewBag.LibraryItems = await GetLibraryAsync();
-    //     return View(bookViewModel);
-    // }
-
-    [HttpPost("{id}", Name = "EditBook")]
-
-    public async Task<IActionResult> Edit(int id, BookViewModel vm)
-    {
-        if (id == 0)
-        {
-            throw new ArgumentException("ID cannot be null or not found");
+            return Ok(vm);
         }
 
-        if (ModelState.IsValid)
-        {
-            var book = new Book
-            {
-                BookId = id,
-                Title = vm.Title,
-                ISBN = vm.ISBN,
-                PublicationDate = vm.PublicationDate,
-                Genre = vm.Genre,
-                AuthorId = vm.AuthorId,
-                LibraryBranchId = vm.LibraryBranchId,
-                CreatedAt = vm.CreatedAt,
-                UpdatedAt = DateTime.Now
-            };
-            _bookRepository.Update(book);
-            await _bookRepository.SaveAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        //ViewBag.AuthorItems = await GetAuthorsAsync();
-        // ViewBag.LibraryItems = await GetLibraryAsync();
-        return View(vm);
+        return BadRequest(ModelState);
     }
 
     [HttpGet("{id}", Name = "GetBookById")]
-    public async Task<IActionResult> Details(int? id)
+    public async Task<ActionResult<BookViewModel>> Details(int? id)
     {
         if (id == null)
         {
-            return NotFound();
+            return BadRequest("ID cannot be null");
         }
 
         var book = await _bookRepository.GetByIdAsync(id.Value);
@@ -181,41 +108,37 @@ public class BookController : Controller
             UpdatedAt = book.UpdatedAt
         };
 
-        // ViewBag.AuthorItems = await GetAuthorsAsync();
-        // ViewBag.LibraryItems = await GetLibraryAsync();
-        return View(bookViewModel);
+        return Ok(bookViewModel);
     }
 
-    /*  private async Task<SelectList> GetAuthorsAsync()
-       {
-           var authors = await _authorRepository.GetAllAsync();
+    [HttpPut("{id}", Name = "EditBook")]
+    public async Task<IActionResult> Edit(int id, [FromBody] BookViewModel vm)
+    {
+        if (id != vm.BookId)
+        {
+            return BadRequest("ID in the URL does not match ID in the request body");
+        }
 
-           var authorItems = authors
-           .OrderBy(author => author.FirstName) 
-           .ThenBy(author => author.LastName) 
-               .Select(author => new
-               {
-                   Value = author.AuthorId,
-                   Text = $"{author.FirstName} {author.LastName}"
-               })
-               .ToList();
+        if (ModelState.IsValid)
+        {
+            var book = new Book
+            {
+                BookId = id,
+                Title = vm.Title,
+                ISBN = vm.ISBN,
+                PublicationDate = vm.PublicationDate,
+                Genre = vm.Genre,
+                AuthorId = vm.AuthorId,
+                LibraryBranchId = vm.LibraryBranchId,
+                CreatedAt = vm.CreatedAt,
+                UpdatedAt = DateTime.Now
+            };
+            _bookRepository.Update(book);
+            await _bookRepository.SaveAsync();
 
-           return new SelectList(authorItems, "Value", "Text");
-       }/*
+            return NoContent();
+        }
 
-       /*private async Task<SelectList> GetLibraryAsync()
-       {
-           var branches = await _libraryBranchRepository.GetAllAsync();
-
-           var libraryItems = branches
-               .OrderBy(branch => branch.BranchName)
-               .Select(branch => new
-               {
-                   Value = branch.LibraryBranchId,
-                   Text = branch.BranchName
-               })
-               .ToList();
-
-           return new SelectList(libraryItems, "Value", "Text");
-       }*/
+        return BadRequest(ModelState);
+    }
 }

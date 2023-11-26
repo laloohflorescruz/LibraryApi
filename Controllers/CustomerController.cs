@@ -4,69 +4,71 @@ using LibraryApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers;
-
 [ApiController]
-[Route("[controller]")]
-public class CustomerController : Controller
+[Route("api/customers")]
+public class CustomerApiController : ControllerBase
 {
     private readonly IGenericRepository<Customer> _repo;
 
-    public CustomerController(IGenericRepository<Customer> repo)
+    public CustomerApiController(IGenericRepository<Customer> repo)
     {
         _repo = repo;
     }
-    
+
     [HttpGet(Name = "GetCustomerListIndex")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)//Defaul value to be shown on Index = 10
+    public async Task<ActionResult<IEnumerable<CustomerViewModel>>> Index(int page = 1, int pageSize = 10)
     {
-        var customer = await _repo.GetAllAsync();
+        try
+        {
+            var customers = await _repo.GetAllAsync();
 
-        var totalItems = customer.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            var totalItems = customers.Count();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-        var customerViewModels = customer
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)//Values for pages = 10
-            .Select(customer => new CustomerViewModel
+            var customerViewModels = customers
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(customer => new CustomerViewModel
+                {
+                    CustomerId = customer.CustomerId,
+                    FirstName = customer.FirstName,
+                    LastName = customer.LastName,
+                    Birthday = customer.Birthday,
+                    Student = customer.Student,
+                    Email = customer.Email,
+                    Phone = customer.Phone,
+                    Address = customer.Address,
+                    MembershipSince = customer.MembershipSince,
+                    Genre = customer.Genre
+                }).ToList();
+
+            var paginationInfo = new PaginationInfoViewModel
             {
-                CustomerId = customer.CustomerId,
-                LastName = customer.LastName,
-                FirstName = customer.FirstName,
-                Birthday = customer.Birthday,
-                Student = customer.Student,
-                Email = customer.Email,
-                Phone = customer.Phone,
-                Address = customer.Address,
-                MembershipSince = customer.MembershipSince,
-                Genre = customer.Genre
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
 
-            }).ToList();
-
-        var paginationInfo = new PaginationInfoViewModel
+            return Ok(new
+            {
+                Customers = customerViewModels,
+                PaginationInfo = paginationInfo
+            });
+        }
+        catch (Exception)
         {
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalItems = totalItems,
-            TotalPages = totalPages
-        };
-
-        var viewModel = new CustomerIndexViewModel
-        {
-            Customer = customerViewModels,
-            PaginationInfo = paginationInfo
-        };
-        return View(viewModel);
+            return StatusCode(500, "Internal Server Error");
+        }
     }
 
-
     [HttpPost(Name = "CreateCustomer")]
-    public async Task<IActionResult> Create(CustomerViewModel viewModel)
+    public async Task<IActionResult> Create([FromBody] CustomerViewModel viewModel)
     {
         if (ModelState.IsValid)
         {
             var customer = new Customer
             {
-                // CustomerId = viewModel.CustomerId,
                 FirstName = viewModel.FirstName,
                 LastName = viewModel.LastName,
                 Birthday = viewModel.Birthday,
@@ -81,50 +83,52 @@ public class CustomerController : Controller
 
             _repo.Add(customer);
             await _repo.SaveAsync();
-            return RedirectToAction("Index");
+
+            return Ok(viewModel);
         }
-        return View(viewModel);
+
+        return BadRequest(ModelState);
     }
 
-    // public async Task<IActionResult> Edit(int? id)
-    // {
-    //     if (id == null)
-    //     {
-    //         throw new ArgumentException("ID cannot be null or not found");
-    //     }
-
-    //     var customer = await _repo.GetByIdAsync(id.Value);
-
-    //     if (customer == null)
-    //     {
-    //         throw new ArgumentException($"Customer with ID {id} not found");
-    //     }
-
-    //     var viewModel = new CustomerViewModel
-    //     {
-    //         CustomerId = customer.CustomerId,
-    //         FirstName = customer.FirstName,
-    //         LastName = customer.LastName,
-    //         Birthday = customer.Birthday,
-    //         Student = customer.Student,
-    //         Email = customer.Email,
-    //         Phone = customer.Phone,
-    //         Address = customer.Address,
-    //         MembershipSince = customer.MembershipSince,
-    //         Genre = customer.Genre,
-    //         CreatedAt = customer.CreatedAt,
-    //         UpdatedAt = DateTime.Now
-    //     };
-
-    //     return View(viewModel);
-    // }
-
-    [HttpPost("{id}", Name = "EditCustomer")]
-    public async Task<IActionResult> Edit(int id, CustomerViewModel viewModel)
+    [HttpGet("{id}", Name = "GetCustomerDetailsById")]
+    public async Task<ActionResult<CustomerViewModel>> Details(int? id)
     {
-        if (id == 0)
+        if (id == null)
         {
-            throw new ArgumentException("ID cannot be null or not found");
+            return BadRequest("ID cannot be null");
+        }
+
+        var customer = await _repo.GetByIdAsync(id.Value);
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        var customerViewModel = new CustomerViewModel
+        {
+            CustomerId = customer.CustomerId,
+            FirstName = customer.FirstName,
+            LastName = customer.LastName,
+            Birthday = customer.Birthday,
+            Student = customer.Student,
+            Email = customer.Email,
+            Phone = customer.Phone,
+            Address = customer.Address,
+            MembershipSince = customer.MembershipSince,
+            Genre = customer.Genre,
+            CreatedAt = customer.CreatedAt,
+            UpdatedAt = customer.UpdatedAt
+        };
+
+        return Ok(customerViewModel);
+    }
+
+    [HttpPut("{id}", Name = "EditCustomer")]
+    public async Task<IActionResult> Edit(int id, [FromBody] CustomerViewModel viewModel)
+    {
+        if (id != viewModel.CustomerId)
+        {
+            return BadRequest("ID in the URL does not match ID in the request body");
         }
 
         if (ModelState.IsValid)
@@ -148,41 +152,9 @@ public class CustomerController : Controller
             _repo.Update(customer);
             await _repo.SaveAsync();
 
-            return RedirectToAction(nameof(Index));
-        }
-        return View(viewModel);
-    }
-
-   [HttpGet("{id}", Name = "GetCustomerDetailsById")]
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
+            return NoContent();
         }
 
-        var customer = await _repo.GetByIdAsync(id.Value);
-        if (customer == null)
-        {
-            return NotFound();
-        }
-
-        var viewModel = new CustomerViewModel
-        {
-            CustomerId = customer.CustomerId,
-            FirstName = customer.FirstName,
-            LastName = customer.LastName,
-            Birthday = customer.Birthday,
-            Student = customer.Student,
-            Email = customer.Email,
-            Phone = customer.Phone,
-            Address = customer.Address,
-            MembershipSince = customer.MembershipSince,
-            Genre = customer.Genre,
-            CreatedAt = customer.CreatedAt,
-            UpdatedAt = customer.UpdatedAt
-        };
-
-        return View(viewModel);
+        return BadRequest(ModelState);
     }
 }

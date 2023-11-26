@@ -6,55 +6,59 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryApi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class AuthorController : Controller
+[Route("api/authors")]
+public class AuthorApiController : ControllerBase
 {
     private readonly IGenericRepository<Author> _authorRepository;
 
-    public AuthorController(IGenericRepository<Author> authorRepository)
+    public AuthorApiController(IGenericRepository<Author> authorRepository)
     {
         _authorRepository = authorRepository;
     }
 
     [HttpGet(Name = "GetAuthorListIndex")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)//Defaul value to be shown on Index = 10
+    public async Task<ActionResult<IEnumerable<AuthorViewModel>>> Index(int page = 1, int pageSize = 10)
     {
-        var authors = await _authorRepository.GetAllAsync();
-        var totalItems = authors.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        var authorViewModels = authors
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)//Values for pages = 10
-        .Select(author => new AuthorViewModel
+        try
         {
-            AuthorId = author.AuthorId,
-            LastName = author.LastName,
-            FirstName = author.FirstName,
-            BirthPlace = author.BirthPlace,
-            NobelPrize = author.NobelPrize
-        }).ToList();
+            var authors = await _authorRepository.GetAllAsync();
+            var totalItems = authors.Count();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-        var paginationInfo = new PaginationInfoViewModel
+            var authorViewModels = authors
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(author => new AuthorViewModel
+                {
+                    AuthorId = author.AuthorId,
+                    LastName = author.LastName,
+                    FirstName = author.FirstName,
+                    BirthPlace = author.BirthPlace,
+                    NobelPrize = author.NobelPrize
+                }).ToList();
+
+            var paginationInfo = new PaginationInfoViewModel
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
+
+            return Ok(new
+            {
+                Authors = authorViewModels,
+                PaginationInfo = paginationInfo
+            });
+        }
+        catch (Exception)
         {
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalItems = totalItems,
-            TotalPages = totalPages
-        };
-
-        var viewModel = new AuthorIndexViewModel
-        {
-            Author = authorViewModels,
-            PaginationInfo = paginationInfo
-        };
-
-        return View(viewModel);
+            return StatusCode(500, "Internal Server Error");
+        }
     }
 
-
     [HttpPost(Name = "CreateAuthor")]
-    public async Task<IActionResult> Create(AuthorViewModel vm)
+    public async Task<IActionResult> Create([FromBody] AuthorViewModel vm)
     {
         if (ModelState.IsValid)
         {
@@ -69,75 +73,19 @@ public class AuthorController : Controller
 
             _authorRepository.Add(author);
             await _authorRepository.SaveAsync();
-            return RedirectToAction("Index");
-        }
-        return View(vm);
-    }
-
-    // public async Task<IActionResult> Edit(int? id)
-    // {
-    //     if (id == null)
-    //     {
-    //         throw new ArgumentException("ID cannot be null or not found");
-    //     }
-
-    //     var author = await _authorRepository.GetByIdAsync(id.Value);
-
-    //     if (author == null)
-    //     {
-    //         throw new ArgumentException($"Author with ID {id} not found");
-    //     }
-
-    //     var authorViewModel = new AuthorViewModel
-    //     {
-    //         AuthorId = author.AuthorId,
-    //         LastName = author.LastName,
-    //         FirstName = author.FirstName,
-    //         BirthPlace = author.BirthPlace,
-    //         NobelPrize = author.NobelPrize,
-    //         CreatedAt = author.CreatedAt,
-    //         UpdatedAt = DateTime.Now
-    //     };
-
-    //     return View(authorViewModel);
-    // }
-
-    [HttpPost("{id}", Name = "EditAuthor")]
-    public async Task<IActionResult> Edit(int id, AuthorViewModel vm)
-    {
-        if (id == 0)
-        {
-            throw new ArgumentException("ID cannot be null or not found");
+            
+            return Ok(vm);
         }
 
-        if (ModelState.IsValid)
-        {
-            var author = new Author
-            {
-                AuthorId = id,
-                LastName = vm.LastName,
-                FirstName = vm.FirstName,
-                BirthPlace = vm.BirthPlace,
-                NobelPrize = vm.NobelPrize,
-                CreatedAt = vm.CreatedAt,
-                UpdatedAt = DateTime.Now
-            };
-
-            _authorRepository.Update(author);
-            await _authorRepository.SaveAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        return View(vm);
+        return BadRequest(ModelState);
     }
 
     [HttpGet("{id}", Name = "GetAuthorDetailsById")]
-    public async Task<IActionResult> Details(int? id)
+    public async Task<ActionResult<AuthorViewModel>> Details(int? id)
     {
         if (id == null)
         {
-            return NotFound();
+            return BadRequest("ID cannot be null");
         }
 
         var author = await _authorRepository.GetByIdAsync(id.Value);
@@ -156,9 +104,38 @@ public class AuthorController : Controller
             NobelPrize = author.NobelPrize,
             CreatedAt = author.CreatedAt,
             UpdatedAt = author.UpdatedAt
-
         };
 
-        return View(authorViewModel);
+        return Ok(authorViewModel);
+    }
+
+    [HttpPut("{id}", Name = "EditAuthor")]
+    public async Task<IActionResult> Edit(int id, [FromBody] AuthorViewModel vm)
+    {
+        if (id != vm.AuthorId)
+        {
+            return BadRequest("ID in the URL does not match ID in the request body");
+        }
+
+        if (ModelState.IsValid)
+        {
+            var author = new Author
+            {
+                AuthorId = id,
+                LastName = vm.LastName,
+                FirstName = vm.FirstName,
+                BirthPlace = vm.BirthPlace,
+                NobelPrize = vm.NobelPrize,
+                CreatedAt = vm.CreatedAt,
+                UpdatedAt = DateTime.Now
+            };
+
+            _authorRepository.Update(author);
+            await _authorRepository.SaveAsync();
+
+            return NoContent();
+        }
+
+        return BadRequest(ModelState);
     }
 }

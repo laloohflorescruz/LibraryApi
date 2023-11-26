@@ -23,6 +23,6 @@ namespace LibraryApi.ViewModel
         [Display(Name = "Has this author won any Nobel Prize")]
         public bool NobelPrize { get; set; }
 
-        public List<Author>? AuthorList { get; set; }
+      //  public List<Author>? AuthorList { get; set; }
     }
 }

@@ -56,10 +56,9 @@ public class LibraryBranchApiController : ControllerBase
                 PaginationInfo = paginationInfo
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // Log the exception or handle it appropriately
-            return StatusCode(500, "Internal Server Error");
+             return StatusCode(500, "Internal Server Error");
         }
     }
 
@@ -83,7 +82,7 @@ public class LibraryBranchApiController : ControllerBase
             _libRep.Add(branch);
             await _libRep.SaveAsync();
 
-            return CreatedAtAction("GetLibraryDetailsById", new { id = branch.LibraryBranchId }, viewModel);
+            return Ok(viewModel);
         }
 
         return BadRequest(ModelState);
