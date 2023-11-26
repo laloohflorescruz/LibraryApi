@@ -153,9 +153,9 @@ public class LibraryBranchApiController : ControllerBase
     }
 
     [HttpDelete("{id}", Name = "DeleteLibraryBranch")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var branch = _libRep.GetByIdAsync(id);
+        var branch = await _libRep.GetByIdAsync(id);
         if (branch == null)
         {
             return NotFound("ID not found!");

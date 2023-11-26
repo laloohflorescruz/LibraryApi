@@ -158,11 +158,11 @@ public class CustomerApiController : ControllerBase
         return BadRequest(ModelState);
     }
 
-     [HttpDelete("{id}", Name = "DeleteLCustomer")]
-    public IActionResult Delete(int id)
+    [HttpDelete("{id}", Name = "DeleteLCustomer")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var branch = _repo.GetByIdAsync(id);
-        if (branch == null)
+        var customer = await _repo.GetByIdAsync(id);
+        if (customer == null)
         {
             return NotFound("ID not found!");
         }

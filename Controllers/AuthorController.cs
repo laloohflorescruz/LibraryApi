@@ -73,7 +73,7 @@ public class AuthorApiController : ControllerBase
 
             _authorRepository.Add(author);
             await _authorRepository.SaveAsync();
-            
+
             return Ok(vm);
         }
 
@@ -139,11 +139,11 @@ public class AuthorApiController : ControllerBase
         return BadRequest(ModelState);
     }
 
-     [HttpDelete("{id}", Name = "DeleteAuthor")]
-    public IActionResult Delete(int id)
+    [HttpDelete("{id}", Name = "DeleteAuthor")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var branch = _authorRepository.GetByIdAsync(id);
-        if (branch == null)
+        var author = await _authorRepository.GetByIdAsync(id);
+        if (author == null)
         {
             return NotFound("ID not found!");
         }

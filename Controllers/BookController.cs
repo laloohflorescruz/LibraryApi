@@ -142,11 +142,11 @@ public class BookApiController : ControllerBase
         return BadRequest(ModelState);
     }
 
-     [HttpDelete("{id}", Name = "DeleteBook")]
-    public IActionResult Delete(int id)
+    [HttpDelete("{id}", Name = "DeleteBook")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var branch = _bookRepository.GetByIdAsync(id);
-        if (branch == null)
+        var book = await _bookRepository.GetByIdAsync(id);
+        if (book == null)
         {
             return NotFound("ID not found!");
         }
