@@ -141,4 +141,16 @@ public class BookApiController : ControllerBase
 
         return BadRequest(ModelState);
     }
+
+     [HttpDelete("{id}", Name = "DeleteBook")]
+    public IActionResult Delete(int id)
+    {
+        var branch = _bookRepository.GetByIdAsync(id);
+        if (branch == null)
+        {
+            return NotFound("ID not found!");
+        }
+        _bookRepository.Remove(id);
+        return Ok("Deleted successfully");
+    }
 }

@@ -52,9 +52,14 @@ namespace LibraryApi.Repo
             return await _dbContext.SaveChangesAsync();
         }
 
-        public void Remove(T entity)
+        public void Remove(int id)
         {
-            _dbSet.Remove(entity);
+       var entity = _dbSet.Find(id);
+    if (entity != null)
+    {
+        _dbSet.Remove(entity);
+        _dbContext.SaveChanges();  
+    }
         }
     }
 }

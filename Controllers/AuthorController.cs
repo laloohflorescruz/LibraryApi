@@ -138,4 +138,16 @@ public class AuthorApiController : ControllerBase
 
         return BadRequest(ModelState);
     }
+
+     [HttpDelete("{id}", Name = "DeleteAuthor")]
+    public IActionResult Delete(int id)
+    {
+        var branch = _authorRepository.GetByIdAsync(id);
+        if (branch == null)
+        {
+            return NotFound("ID not found!");
+        }
+        _authorRepository.Remove(id);
+        return Ok("Deleted successfully");
+    }
 }

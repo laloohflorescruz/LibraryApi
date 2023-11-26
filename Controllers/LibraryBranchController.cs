@@ -58,7 +58,7 @@ public class LibraryBranchApiController : ControllerBase
         }
         catch (Exception)
         {
-             return StatusCode(500, "Internal Server Error");
+            return StatusCode(500, "Internal Server Error");
         }
     }
 
@@ -150,5 +150,17 @@ public class LibraryBranchApiController : ControllerBase
         }
 
         return BadRequest(ModelState);
+    }
+
+    [HttpDelete("{id}", Name = "DeleteLibraryBranch")]
+    public IActionResult Delete(int id)
+    {
+        var branch = _libRep.GetByIdAsync(id);
+        if (branch == null)
+        {
+            return NotFound("ID not found!");
+        }
+        _libRep.Remove(id);
+        return Ok("Deleted successfully");
     }
 }

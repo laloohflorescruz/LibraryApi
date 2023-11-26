@@ -157,4 +157,16 @@ public class CustomerApiController : ControllerBase
 
         return BadRequest(ModelState);
     }
+
+     [HttpDelete("{id}", Name = "DeleteLCustomer")]
+    public IActionResult Delete(int id)
+    {
+        var branch = _repo.GetByIdAsync(id);
+        if (branch == null)
+        {
+            return NotFound("ID not found!");
+        }
+        _repo.Remove(id);
+        return Ok("Deleted successfully");
+    }
 }
