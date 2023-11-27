@@ -21,11 +21,11 @@ This is a project for university.
 
 ## Prerequisites
 - Visual Studio Code
-- .NET Core SDK
-- SQLite
-- Entity Framework Core 7
-- Bootstrap
+- .NET Core SDK - Version 7.0.0
+- SQL Lite
 
+
+ 
 ## Getting Started
 
 ### 1. Clone the Repository
@@ -34,10 +34,14 @@ git clone https://github.com/laloohflorescruz/libraryapi.git
 cd LibraryApi
 
 ## Tool Required:
--dotnet tool install --global dotnet-ef --version 7.0.0
--dotnet add package Microsoft.EntityFrameworkCore
--dotnet add package Microsoft.EntityFrameworkCore.Design
--dotnet add package Microsoft.EntityFrameworkCore.SQLite  
+-dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 7.0.0
+-dotnet add package Swashbuckle.AspNetCore --version 6.5.0
+-dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore --version 7.0.0
+-dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 7.0.0
+-dotnet add package Microsoft.AspNetCore.Identity.UI --version 7.0.0
+-dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 7.0.0
+-dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 7.0.0
+
 
  
 ## 1. Run the project
@@ -47,7 +51,7 @@ cd LibraryApi
 dotnet restore
 
 ### 3. Database Migration
-
+ 
 #### 3.1 Run Database Migrations
 
 -cd LibraryApi
@@ -64,7 +68,7 @@ dotnet restore
 
 
 
-The application will be accessible at `https://localhost:7243/` by default.
+The application will be accessible at `http://localhost:5030` by default.
 
 ## Project Structure
 
@@ -78,18 +82,18 @@ The application will be accessible at `https://localhost:7243/` by default.
 
 
 
-<!-- 
+
 
 ## Demo Pictures
 
-<img src="./LibraryProject/assets/img/01.png"/>
-<img src="./LibraryProject/assets/img/02.png"/>
-<img src="./LibraryProject/assets/img/03.png"/>
-<img src="./LibraryProject/assets/img/04.png"/>
-<img src="./LibraryProject/assets/img/05.png"/>
-<img src="./LibraryProject/assets/img/06.png"/>
-<img src="./LibraryProject/assets/img/07.png"/>
-<img src="./LibraryProject/assets/img/08.png"/>
+<img src="./assets/img/01.png"/>
+<img src="./assets/img/02.png"/>
+<img src="./assets/img/03.png"/>
+<img src="./assets/img/04.png"/>
+<img src="./assets/img/05.png"/>
+<img src="./assets/img/06.png"/>
+<img src="./assets/img/07.png"/>
+<!-- <img src="./LibraryProject/assets/img/08.png"/>
 <img src="./LibraryProject/assets/img/09.png"/>
 <img src="./LibraryProject/assets/img/10.png"/>
 <img src="./LibraryProject/assets/img/11.png"/>
